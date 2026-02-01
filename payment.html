@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Karate Academy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .payment-header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .payment-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .order-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .order-summary h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid var(--primary-color);
+            margin-top: 10px;
+            padding-top: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .summary-row.total .amount {
+            color: var(--primary-color);
+        }
+
+        .payment-methods {
+            margin-bottom: 30px;
+        }
+
+        .payment-methods h2 {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .payment-option {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .payment-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .payment-option.selected {
+            border-color: var(--primary-color);
+            background: var(--light-bg);
+        }
+
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+
+        .payment-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .payment-icon.upi {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .payment-icon.banking {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .payment-details h4 {
+            margin: 0 0 5px 0;
+        }
+
+        .payment-details p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.2rem;
+            margin-top: auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .upi-details, .banking-details {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .payment-option.selected .upi-details,
+        .payment-option.selected .banking-details {
+            display: block;
+        }
+
+        .upi-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        .banking-form {
+            display: grid;
+            gap: 10px;
+        }
+
+        .banking-form input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img id="navLogoImage" src="" alt="Logo" style="display: none;">
+            <i class="fas fa-fist-raised"></i>
+            <span>Karate Academy</span>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#videos">Videos</a></li>
+            <li><a href="index.html#membership">Membership</a></li>
+            <li><a href="index.html#gallery">Gallery</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+            <li id="userLoginLink"><a href="#" onclick="showUserLogin(); return false;">Login</a></li>
+            <li id="userProfileLink" style="display: none;"><a href="#" onclick="showUserProfile(); return false;"><i class="fas fa-user"></i> <span id="userNameDisplay"></span></a></li>
+        </ul>
+    </nav>
+
+    <div class="payment-container">
+        <a href="purchase.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Location
+        </a>
+
+        <div class="payment-header">
+            <h1><i class="fas fa-credit-card"></i> Payment</h1>
+            <p>Complete your purchase securely</p>
+        </div>
+
+        <div class="order-summary" id="orderSummary">
+            <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+            <div class="summary-row">
+                <span>Plan</span>
+                <span id="summaryPlan">Loading...</span>
+            </div>
+            <div class="summary-row">
+                <span>Location</span>
+                <span id="summaryLocation">Loading...</span>
+            </div>
+            <div class="summary-row">
+                <span>Duration</span>
+                <span>Monthly</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span class="amount" id="summaryTotal">₹0</span>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <h2><i class="fas fa-wallet"></i> Select Payment Method</h2>
+            
+            <div class="payment-option" onclick="selectPayment(this, 'upi')">
+                <input type="radio" name="payment" value="upi">
+                <div class="payment-icon upi">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="payment-details">
+                    <h4>UPI</h4>
+                    <p>Pay using Google Pay, PhonePe, Paytm, etc.</p>
+                </div>
+                <div class="upi-details">
+                    <input type="text" class="upi-input" id="upiId" placeholder="Enter your UPI ID (e.g., name@okhdfcbank)">
+                </div>
+            </div>
+
+            <div class="payment-option" onclick="selectPayment(this, 'banking')">
+                <input type="radio" name="payment" value="banking">
+                <div class="payment-icon banking">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="payment-details">
+                    <h4>Net Banking</h4>
+                    <p>Pay directly from your bank account</p>
+                </div>
+                <div class="banking-details">
+                    <div class="banking-form">
+                        <input type="text" id="bankName" placeholder="Bank Name">
+                        <input type="text" id="accountNumber" placeholder="Account Number">
+                        <input type="text" id="ifscCode" placeholder="IFSC Code">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="error-message" id="paymentError">Please select a payment method and fill in the required details</div>
+
+        <button class="btn btn-primary btn-pay" onclick="processPayment()">
+            Pay Now <i class="fas fa-lock"></i>
+        </button>
+    </div>
+
+    <!-- User Login Modal -->
+    <div class="modal" id="userLoginModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserLogin()">&times;</span>
+            <h2><i class="fas fa-user"></i> Member Login</h2>
+            <form id="userLoginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="userEmail" placeholder="Enter your email" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p id="loginError" style="color: #e74c3c; margin-top: 10px;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div class="modal" id="userProfileModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserProfile()">&times;</span>
+            <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+            <div id="userProfileContent"></div>
+            <button class="btn btn-secondary" onclick="logoutUser()" style="margin-top: 15px;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let selectedPaymentMethod = '';
+        let purchaseDetails = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const stored = localStorage.getItem('pendingPurchase');
+            if (stored) {
+                purchaseDetails = JSON.parse(stored);
+                loadOrderSummary();
+            } else {
+                window.location.href = 'purchase.html';
+            }
+            checkUserLogin();
+            
+            // Apply saved settings for logo
+            const storedSettings = localStorage.getItem('karateSettings');
+            if (storedSettings) {
+                const settings = JSON.parse(storedSettings);
+                const navLogoImage = document.getElementById('navLogoImage');
+                const navBrandIcon = document.querySelector('.nav-brand i');
+                
+                if (navLogoImage && settings.logoImage) {
+                    navLogoImage.src = settings.logoImage;
+                    navLogoImage.style.display = 'block';
+                    if (navBrandIcon) {
+                        navBrandIcon.style.display = 'none';
+                    }
+                }
+                
+                const navBrandText = document.querySelector('.nav-brand span');
+                if (navBrandText && settings.siteName) {
+                    navBrandText.textContent = settings.siteName;
+                }
+            }
+        });
+
+        function loadOrderSummary() {
+            const pricing = getPricing();
+            const planNames = {
+                'beginner': 'Beginner Plan',
+                'advanced': 'Advanced Plan',
+                'elite': 'Elite Plan'
+            };
+            
+            const planData = pricing[purchaseDetails.plan] || { price: 49, discount: 0 };
+            const finalPrice = planData.price - (planData.price * planData.discount / 100);
+            
+            document.getElementById('summaryPlan').textContent = planNames[purchaseDetails.plan] || 'Beginner Plan';
+            document.getElementById('summaryLocation').textContent = purchaseDetails.location || 'Not selected';
+            document.getElementById('summaryTotal').textContent = `$${finalPrice.toFixed(0)}`;
+        }
+
+        function selectPayment(element, method) {
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.querySelector('input').checked = false;
+            });
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+            selectedPaymentMethod = method;
+            document.getElementById('paymentError').style.display = 'none';
+        }
+
+        function processPayment() {
+            if (!selectedPaymentMethod) {
+                document.getElementById('paymentError').style.display = 'block';
+                return;
+            }
+
+            let paymentDetails = {};
+
+            if (selectedPaymentMethod === 'upi') {
+                const upiId = document.getElementById('upiId').value;
+                if (!upiId || !upiId.includes('@')) {
+                    document.getElementById('paymentError').textContent = 'Please enter a valid UPI ID';
+                    document.getElementById('paymentError').style.display = 'block';
+                    return;
+                }
+                paymentDetails = {
+                    method: 'UPI',
+                    upiId: upiId
+                };
+            } else if (selectedPaymentMethod === 'banking') {
+                const bankName = document.getElementById('bankName').value;
+                const accountNumber = document.getElementById('accountNumber').value;
+                const ifscCode = document.getElementById('ifscCode').value;
+                
+                if (!bankName || !accountNumber || !ifscCode) {
+                    document.getElementById('paymentError').textContent = 'Please fill in all bank details';
+                    document.getElementById('paymentError').style.display = 'block';
+                    return;
+                }
+                paymentDetails = {
+                    method: 'Net Banking',
+                    bankName: bankName,
+                    accountNumber: accountNumber,
+                    ifscCode: ifscCode
+                };
+            }
+
+            // Store payment details
+            purchaseDetails.payment = paymentDetails;
+            purchaseDetails.paymentStatus = 'completed';
+            purchaseDetails.paymentDate = new Date().toISOString();
+            localStorage.setItem('pendingPurchase', JSON.stringify(purchaseDetails));
+            
+            // Redirect to confirmation page
+            window.location.href = 'confirmation.html';
+        }
+    </script>
+</body>
+</html>
