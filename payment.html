@@ -153,7 +153,12 @@
             display: none;
         }
 
-        .upi-details, .banking-details {
+        .payment-icon.check {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .upi-details, .banking-details, .check-details {
             display: none;
             margin-top: 15px;
             padding: 15px;
@@ -162,7 +167,8 @@
         }
 
         .payment-option.selected .upi-details,
-        .payment-option.selected .banking-details {
+        .payment-option.selected .banking-details,
+        .payment-option.selected .check-details {
             display: block;
         }
 
@@ -186,6 +192,60 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 1rem;
+        }
+
+        .check-details {
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .check-details p {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+
+        .check-info {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .upi-apps {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .upi-app-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+        }
+
+        .upi-app-btn.phonepe {
+            background: #673AB7;
+        }
+
+        .upi-app-btn.gpay {
+            background: #00897B;
+        }
+
+        .upi-app-btn:hover {
+            opacity: 0.9;
         }
     </style>
 </head>
@@ -253,11 +313,34 @@
                     <p>Pay using Google Pay, PhonePe, Paytm, etc.</p>
                 </div>
                 <div class="upi-details">
-                    <a href="upi://pay?pa=9047424116@ybl&pn=Karate%20Academy&am=${purchaseDetails.price}" class="btn btn-primary btn-full" style="margin-top: 15px; text-align: center; display: block;">
-                        <i class="fas fa-mobile-alt"></i> Pay Now via UPI
-                    </a>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Pay to UPI ID: <strong>9047424116@ybl</strong></p>
+                    <div class="upi-apps">
+                        <a href="phonepe://pay?pa=9047424116@ybl&pn=Karate%20Academy&am=${purchaseDetails.price}" class="upi-app-btn phonepe" onclick="return confirmPayment('phonepe')">
+                            <i class="fab fa-phone"></i> PhonePe
+                        </a>
+                        <a href="gpay://pay?pa=9047424116@ybl&pn=Karate%20Academy&am=${purchaseDetails.price}" class="upi-app-btn gpay" onclick="return confirmPayment('gpay')">
+                            <i class="fab fa-google"></i> Google Pay
+                        </a>
+                    </div>
                     <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">After payment, click the button below:</p>
                     <input type="text" class="upi-input" id="upiId" placeholder="Enter UPI Reference No. (optional)">
+                </div>
+            </div>
+
+            <div class="payment-option" onclick="selectPayment(this, 'check')">
+                <input type="radio" name="payment" value="check">
+                <div class="payment-icon check">
+                    <i class="fas fa-money-check"></i>
+                </div>
+                <div class="payment-details">
+                    <h4>Pay by Check</h4>
+                    <p>Pay with check at the academy</p>
+                </div>
+                <div class="check-details">
+                    <p>You can pay by check at our academy location. Please bring the check on your first visit.</p>
+                    <div class="check-info">
+                        <i class="fas fa-info-circle"></i> Make check payable to: <strong>Karate Academy</strong>
+                    </div>
                 </div>
             </div>
 
@@ -366,6 +449,23 @@
             document.getElementById('summaryPlan').textContent = planNames[purchaseDetails.plan] || 'Beginner Plan';
             document.getElementById('summaryLocation').textContent = purchaseDetails.location || 'Not selected';
             document.getElementById('summaryTotal').textContent = `₹${finalPrice.toFixed(0)}`;
+            
+            // Update UPI links with actual price
+            updateUPILinks(finalPrice.toFixed(0));
+        }
+
+        function updateUPILinks(price) {
+            const upiLinks = document.querySelectorAll('.upi-app-btn');
+            upiLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const newHref = href.replace(/am=\d+/, `am=${price}`);
+                link.setAttribute('href', newHref);
+            });
+        }
+
+        function confirmPayment(app) {
+            const appName = app === 'phonepe' ? 'PhonePe' : 'Google Pay';
+            return confirm(`This will open ${appName} to complete your payment of ₹${document.getElementById('summaryTotal').textContent.replace('₹', '')}. Continue?`);
         }
 
         function selectPayment(element, method) {
@@ -389,10 +489,19 @@
 
             if (selectedPaymentMethod === 'upi') {
                 // UPI payment - show receiver UPI ID, user pays to that ID
+                const upiRef = document.getElementById('upiId').value;
                 paymentDetails = {
                     method: 'UPI',
                     upiId: '9047424116@ybl',
-                    receiverUpi: '9047424116@ybl'
+                    receiverUpi: '9047424116@ybl',
+                    upiReference: upiRef || 'Not provided'
+                };
+            } else if (selectedPaymentMethod === 'check') {
+                // Check payment - record as check payment
+                paymentDetails = {
+                    method: 'Check',
+                    checkPayee: 'Karate Academy',
+                    status: 'Pending - Pay at academy'
                 };
             } else if (selectedPaymentMethod === 'banking') {
                 const bankName = document.getElementById('bankName').value;
