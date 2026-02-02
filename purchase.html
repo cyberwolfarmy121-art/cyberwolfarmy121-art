@@ -193,7 +193,7 @@
 
         <div class="error-message" id="locationError">Please select a location to continue</div>
 
-        <button class="btn btn-primary btn-purchase" onclick="proceedToPayment()">
+        <button class="btn btn-primary btn-purchase" id="continuePaymentBtn" onclick="proceedToPayment()" style="display: none;">
             Continue to Payment <i class="fas fa-arrow-right"></i>
         </button>
     </div>
@@ -281,6 +281,9 @@
             element.classList.add('selected');
             selectedLocation = element.dataset.location;
             document.getElementById('locationError').style.display = 'none';
+            
+            // Show the Continue to Payment button
+            document.getElementById('continuePaymentBtn').style.display = 'block';
         }
 
         function proceedToPayment() {
