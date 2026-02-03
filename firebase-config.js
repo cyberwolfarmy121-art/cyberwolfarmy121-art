@@ -12,20 +12,19 @@ const firebaseConfig = {
     measurementId: "G-X4Q6XPHKDD"
 };
 
-// Initialize Firebase
-let firebaseApp = null;
+// Initialize Firebase only if SDK is available
 let database = null;
 
-if (typeof firebase !== 'undefined') {
-    try {
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        database = firebase.database();
-        console.log('Firebase initialized successfully');
-    } catch (error) {
-        console.warn('Firebase initialization error:', error);
+function initFirebase() {
+    if (typeof firebase !== 'undefined' && !database) {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.log('Firebase initialization skipped:', error.message);
+        }
     }
-} else {
-    console.warn('Firebase SDK not loaded. Cross-device sync disabled.');
 }
 
 // Get settings from localStorage
@@ -78,7 +77,7 @@ const firebaseSync = {
                 console.log('Saved to Firebase:', path);
                 return true;
             } catch (error) {
-                console.error('Firebase save error:', error);
+                console.log('Firebase save skipped');
                 return false;
             }
         }
@@ -94,107 +93,8 @@ const firebaseSync = {
             return () => ref.off();
         }
         return () => {};
-    },
-
-    push: async (path, data) => {
-        if (database) {
-            try {
-                const newRef = database.ref(path).push();
-                await newRef.set(data);
-                return newRef.key;
-            } catch (error) {
-                console.error('Firebase push error:', error);
-                return null;
-            }
-        }
-        return null;
-    },
-
-    update: async (path, data) => {
-        if (database) {
-            try {
-                await database.ref(path).update(data);
-                return true;
-            } catch (error) {
-                console.error('Firebase update error:', error);
-                return false;
-            }
-        }
-        return false;
-    },
-
-    remove: async (path) => {
-        if (database) {
-            try {
-                await database.ref(path).remove();
-                return true;
-            } catch (error) {
-                console.error('Firebase remove error:', error);
-                return false;
-            }
-        }
-        return false;
     }
 };
 
-// Auto-sync all karate data
-const autoSync = {
-    syncInterval: null,
-    
-    start: () => {
-        if (!firebaseSync.isAvailable()) return;
-        
-        autoSync.syncInterval = setInterval(() => {
-            autoSync.saveAll();
-        }, 300000);
-        
-        console.log('Firebase auto-sync started');
-    },
-    
-    stop: () => {
-        if (autoSync.syncInterval) {
-            clearInterval(autoSync.syncInterval);
-        }
-    },
-    
-    saveAll: () => {
-        if (!firebaseSync.isAvailable()) return;
-        
-        const data = {
-            videos: getVideos(),
-            masters: getMasters(),
-            champions: getChampions(),
-            awarded: getAwarded(),
-            features: getFeatures(),
-            pricing: getPricing(),
-            settings: getSettings(),
-            paymentSessions: getPaymentSessions()
-        };
-        
-        firebaseSync.save('karateApp', data);
-        console.log('Auto-synced to Firebase');
-    },
-    
-    loadAll: async () => {
-        if (!firebaseSync.isAvailable()) return null;
-        
-        try {
-            return await new Promise((resolve) => {
-                firebaseSync.listen('karateApp', (data) => {
-                    resolve(data);
-                });
-            });
-        } catch (error) {
-            console.error('Error loading from Firebase:', error);
-            return null;
-        }
-    }
-};
-
-if (typeof window !== 'undefined') {
-    window.addEventListener('load', () => {
-        if (firebaseSync.isAvailable()) {
-            autoSync.start();
-        }
-    });
-}
+// Initialize Firebase when DOM is ready
+document.addEventListener('DOMContentLoaded', initFirebase);
