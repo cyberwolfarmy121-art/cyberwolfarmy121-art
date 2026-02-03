@@ -231,13 +231,26 @@
         let selectedLocation = '';
         let selectedPlan = '';
 
-        // Load selected plan from URL and logo
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            selectedPlan = urlParams.get('plan') || 'beginner';
-            loadSelectedPlan();
-            
-            // Apply saved settings for logo
+        // Listen for storage changes (admin updates from other tabs)
+        window.addEventListener('storage', function(e) {
+            if (e.key && (e.key === 'karatePricing' || e.key === 'karateSettings')) {
+                setTimeout(() => {
+                    loadSelectedPlan();
+                    applySettings();
+                }, 100);
+            }
+        });
+
+        // Listen for custom event (admin updates in same tab)
+        window.addEventListener('karateDataChange', function() {
+            setTimeout(() => {
+                loadSelectedPlan();
+                applySettings();
+            }, 100);
+        });
+
+        // Apply settings
+        function applySettings() {
             const storedSettings = localStorage.getItem('karateSettings');
             if (storedSettings) {
                 const settings = JSON.parse(storedSettings);
@@ -257,6 +270,14 @@
                     navBrandText.textContent = settings.siteName;
                 }
             }
+        }
+
+        // Load selected plan from URL and logo
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            selectedPlan = urlParams.get('plan') || 'beginner';
+            loadSelectedPlan();
+            applySettings();
         });
 
         function loadSelectedPlan() {

@@ -153,6 +153,51 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAwarded();
 });
 
+// Listen for storage changes (admin updates from other tabs)
+window.addEventListener('storage', function(e) {
+    if (e.key && e.key.startsWith('karate')) {
+        // Debounce to avoid multiple rapid updates
+        clearTimeout(window.storageUpdateTimeout);
+        window.storageUpdateTimeout = setTimeout(() => {
+            reloadAllDynamicContent();
+        }, 100);
+    }
+});
+
+// Listen for custom event (admin updates in same tab)
+window.addEventListener('karateDataChange', function() {
+    clearTimeout(window.storageUpdateTimeout);
+    window.storageUpdateTimeout = setTimeout(() => {
+        reloadAllDynamicContent();
+    }, 100);
+});
+
+// Reload all dynamic content
+function reloadAllDynamicContent() {
+    if (document.getElementById('plansContainer') || document.querySelector('.plan-card')) {
+        loadSavedPricing();
+    }
+    loadSavedVideos();
+    loadMasters();
+    loadChampions();
+    loadAwarded();
+    
+    // Re-apply settings
+    const storedSettings = localStorage.getItem('karateSettings');
+    if (storedSettings) {
+        const settings = JSON.parse(storedSettings);
+        const navBrandText = document.querySelector('.nav-brand span');
+        const navLogoImage = document.getElementById('navLogoImage');
+        
+        if (navBrandText && settings.siteName) {
+            navBrandText.textContent = settings.siteName;
+        }
+        if (settings.siteName) {
+            document.title = settings.siteName + ' - Master the Art';
+        }
+    }
+}
+
 // Check user login status
 function checkUserLogin() {
     const currentUser = localStorage.getItem('currentUser');

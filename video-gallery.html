@@ -473,7 +473,20 @@
         // Save videos to localStorage
         function saveGalleryVideos(videos) {
             localStorage.setItem('karateGalleryVideos', JSON.stringify(videos));
+            window.dispatchEvent(new Event('karateDataChange'));
         }
+
+        // Listen for storage changes (admin updates from other tabs)
+        window.addEventListener('storage', function(e) {
+            if (e.key && e.key.startsWith('karate')) {
+                setTimeout(() => loadVideos(), 100);
+            }
+        });
+
+        // Listen for custom event (admin updates in same tab)
+        window.addEventListener('karateDataChange', function() {
+            setTimeout(() => loadVideos(), 100);
+        });
 
         // Load and display videos
         function loadVideos() {

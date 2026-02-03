@@ -455,7 +455,20 @@
         // Save images to localStorage
         function saveGalleryImages(images) {
             localStorage.setItem('karateGalleryImages', JSON.stringify(images));
+            window.dispatchEvent(new Event('karateDataChange'));
         }
+
+        // Listen for storage changes (admin updates from other tabs)
+        window.addEventListener('storage', function(e) {
+            if (e.key && e.key.startsWith('karate')) {
+                setTimeout(() => loadImages(), 100);
+            }
+        });
+
+        // Listen for custom event (admin updates in same tab)
+        window.addEventListener('karateDataChange', function() {
+            setTimeout(() => loadImages(), 100);
+        });
 
         // Load and display images
         function loadImages() {

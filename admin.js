@@ -119,6 +119,7 @@ function getFeatures() {
 // Save features to localStorage
 function saveFeatures(features) {
     localStorage.setItem('karateFeatures', JSON.stringify(features));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 // Load features into the UI
@@ -204,23 +205,28 @@ function setFeaturesFromText(plan, textArray) {
 // Save members to localStorage
 function saveMembers(members) {
     localStorage.setItem('karateMembers', JSON.stringify(members));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 // Save functions
 function saveVideos(videos) {
     localStorage.setItem('karateVideos', JSON.stringify(videos));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 function saveMasters(masters) {
     localStorage.setItem('karateMasters', JSON.stringify(masters));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 function saveChampions(champions) {
     localStorage.setItem('karateChampions', JSON.stringify(champions));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 function saveAwarded(awarded) {
     localStorage.setItem('karateAwarded', JSON.stringify(awarded));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 // Admin credentials
@@ -753,6 +759,7 @@ function getPricing() {
 // Save pricing to localStorage
 function savePricing(pricing) {
     localStorage.setItem('karatePricing', JSON.stringify(pricing));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 // Update price preview
@@ -843,6 +850,7 @@ function getSettings() {
 // Save settings to localStorage
 function saveSettings(settings) {
     localStorage.setItem('karateSettings', JSON.stringify(settings));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 // Logo Form Submit
@@ -1328,6 +1336,7 @@ function getPaymentSessions() {
 // Save payment sessions to localStorage
 function savePaymentSessions(sessions) {
     localStorage.setItem('karatePaymentSessions', JSON.stringify(sessions));
+    window.dispatchEvent(new Event('karateDataChange'));
 }
 
 // Toggle a specific payment session
