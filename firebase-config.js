@@ -12,7 +12,7 @@ const firebaseConfig = {
     appId: "YOUR_APP_ID"
 };
 
-// Initialize Firebase (only if config is set)
+// Initialize Firebase (only if config is set and Firebase SDK is available)
 let firebaseApp = null;
 let database = null;
 
@@ -25,10 +25,10 @@ if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY")
         console.warn('Firebase initialization error:', error);
     }
 } else if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-    console.warn('Firebase config not set. Cross-device sync disabled.');
-    console.warn('To enable: 1) Create a Firebase project at https://console.firebase.google.com/');
-    console.warn('2) Enable Realtime Database');
-    console.warn('3) Replace YOUR_API_KEY in firebase-config.js with your actual config');
+    console.log('Firebase config not set. Cross-device sync disabled.');
+    console.log('To enable: 1) Create a Firebase project at https://console.firebase.google.com/');
+    console.log('2) Enable Realtime Database');
+    console.log('3) Replace YOUR_API_KEY in firebase-config.js with your actual config');
 }
 
 // Get settings from localStorage
@@ -48,7 +48,29 @@ function getSettings() {
     };
 }
 
-// Firebase helper functions
+// Get pricing from localStorage
+function getPricing() {
+    const stored = localStorage.getItem('karatePricing');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return {
+        beginner: { price: 49, discount: 0, features: ['Basic training videos', 'Beginner kata tutorials', 'Community access'] },
+        advanced: { price: 89, discount: 0, features: ['All Beginner features', 'Advanced kata training', 'Kumite techniques', 'Priority support'] },
+        elite: { price: 149, discount: 0, features: ['All Advanced features', '1-on-1 coaching sessions', 'Exclusive content', 'Personalized training plan'] }
+    };
+}
+
+// Get payment sessions from localStorage
+function getPaymentSessions() {
+    const stored = localStorage.getItem('karatePaymentSessions');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return { upi: true, banking: true, check: true, screenshot: true };
+}
+
+// Firebase helper functions - defensive implementation
 const firebaseSync = {
     // Check if Firebase is available
     isAvailable: () => database !== null,
